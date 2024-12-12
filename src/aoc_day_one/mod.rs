@@ -1,11 +1,6 @@
-use std::path::Path;
 use std::usize;
-use std::{
-    fs::File,
-    io::{BufReader, Error, Read},
-};
 
-use crate::shared::get_current_dir;
+use crate::shared::{get_current_dir, parse_file_contents};
 
 //main function
 pub fn run_solution_1() {
@@ -43,8 +38,8 @@ pub fn run_solution_1() {
             Err(_e) => {}
         }
     }
-    let first_column_count = &first_column.iter().count();
-    let second_column_count = &second_column.iter().count();
+    let first_column_count: i32 = first_column.len() as i32;
+    let second_column_count: i32 = second_column.len() as i32;
 
     //perform quick sort on the lists
     quick_sort(&mut first_column, 0, first_column_count - 1);
@@ -62,11 +57,11 @@ pub fn run_solution_1() {
 }
 
 //quick sort algorith
-fn quick_sort(column: &mut Vec<u32>, low: usize, high: usize) {
+fn quick_sort(column: &mut Vec<u32>, low: i32, high: i32) {
     //ensure to only process the list if the low value is less than the high value
     if low < high {
         //acuire the pivot point
-        let part: usize = partition(column, low, high);
+        let part: i32 = partition(column, low, high);
         //use the pivot to sort the items less than the pivot
         quick_sort(column, low, part - 1);
         //use the pivot to sort the items greater than the pivot
@@ -75,44 +70,30 @@ fn quick_sort(column: &mut Vec<u32>, low: usize, high: usize) {
 }
 
 //partition algorithm that just chooses the last value as the pivot point
-fn partition(arr: &mut Vec<u32>, low: usize, high: usize) -> usize {
+fn partition(arr: &mut Vec<u32>, low: i32, high: i32) -> i32 {
     //select last value
-    let pivot = arr[high];
+    let pivot = arr[high as usize];
 
-    //initialize i must be a minimum of 0
-    let mut i: usize = if low as i32 - 1 < 0 { 0 } else { low - 1 };
-
+    //initialize i minimum of - 1 but we increment before
+    let mut i: i32 = low as i32 - 1;
+    // loop low to high
     for n in low..high {
-        if arr[n] < pivot {
+        //if the number is less than the pivot than increment i and swap i and n
+        if arr[n as usize] < pivot {
             i += 1;
-            swap(arr, i as usize, n);
+            swap(arr, i, n);
         }
     }
 
-    swap(arr, i as usize + 1, high);
+    //finally swap the value after i with the pivot (in our case the last element)
+    swap(arr, i + 1, high);
 
-    return i as usize + 1;
+    return i + 1;
 }
 
-fn swap(arr: &mut Vec<u32>, i: usize, j: usize) {
-    let temp = arr[i];
-    arr[i] = arr[j];
-    arr[j] = temp;
-}
-
-fn parse_file_contents(file_dir: &str, file_name: &str) -> Result<String, Error> {
-    let path = Path::new(file_dir).join(file_name);
-    let file: File = match File::open(&path) {
-        Ok(file) => file,
-        Err(e) => panic!(
-            "Error opening input-data.txt. Please make sure the file is in the aoc_day_one folder. {e}"
-        ),
-    };
-    let mut reader = BufReader::new(file);
-
-    let mut file_contents = String::new();
-
-    let _ = reader.read_to_string(&mut file_contents);
-
-    Ok(file_contents)
+//algorithm to swap 2 elements
+fn swap(arr: &mut Vec<u32>, i: i32, j: i32) {
+    let temp = arr[i as usize];
+    arr[i as usize] = arr[j as usize];
+    arr[j as usize] = temp;
 }
